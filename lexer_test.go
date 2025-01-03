@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-var Para = "I am a person, you can call me on <PhoneNumber> or [Email] or you can {Lexy} [[Email] [InvalidTag]"
+var Para = "I am a person, you can call me on <PhoneNumber> or [Email] or you can {Lexy} [[Email] [BadTag]"
 
 var Tags = map[string]string{
 	"PhoneNumber": "2024",
@@ -54,7 +54,7 @@ func BenchmarkRegexMethod(b *testing.B) {
 
 func TestRegexMethod(t *testing.T) {
 	fmt.Println(TagReplacerViaRegex(Para, Tags))
-	if TagReplacerViaRegex(Para, Tags) == "I am a person, you can call me on 2024 or alan@example.com or you can True [Email] [ERROR:InvalidTag]" {
+	if TagReplacerViaRegex(Para, Tags) == "I am a person, you can call me on 2024 or alan@example.com or you can True [Email] [ERROR:BadTag]" {
 	} else {
 		t.Error("Failed")
 	}
@@ -62,7 +62,7 @@ func TestRegexMethod(t *testing.T) {
 }
 
 func TestLexerMethod(t *testing.T) {
-	if LexicalTokeniserTagReplacement.ReplaceTagsInString(Para, Tags) == "I am a person, you can call me on 2024 or alan@example.com or you can True [Email] [ERROR:InvalidTag]" {
+	if LexicalTokeniserTagReplacement.ReplaceTagsInString(Para, Tags) == "I am a person, you can call me on 2024 or alan@example.com or you can True [Email] [ERROR:BadTag]" {
 	} else {
 		t.Error("Failed")
 	}
