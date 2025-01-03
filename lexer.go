@@ -1,31 +1,19 @@
-package main
+package LexicalTokeniserTagReplacement
 
-import (
-	"fmt"
-	"regexp"
-	"strings"
-	"testing"
-)
-
-var Para = "I am a person, you can call me on <PhoneNumber> or [Email] or you can {Lexy} [[Email] [InvalidTag]"
-
-var Tags = map[string]string{
-	"PhoneNumber": "2024",
-	"Email":       "steve@jobs.com",
-	"Lexy":        "True",
-}
+import "strings"
 
 type Type int8
 
 const (
-	None Type = iota
+	None Type = iota << 1
 	TypeSquareBracket
 	TypeSquigglyBracket
 	TypeLessThanMoreThan
+	//TypeAll = TypeSquigglyBracket + TypeSquareBracket + TypeLessThanMoreThan
 )
 
-func TagReplacerViaLexer(v string, t map[string]string) string {
-	var InTagType Type = None
+func ReplaceTagsInString(v string, t map[string]string) string {
+	var InTagType = None
 	var JustEnteredTag = false
 	var CurrentTagName strings.Builder
 	var OutString strings.Builder
@@ -88,55 +76,4 @@ func TagReplacerViaLexer(v string, t map[string]string) string {
 	}
 
 	return OutString.String()
-}
-
-func TagReplacerViaRegex(v string, t map[string]string) string {
-	patterns := []struct {
-		regex   *regexp.Regexp
-		wrapper string
-	}{
-		{regexp.MustCompile(`\{\{|\{([^}]+)\}`), "{%s}"},
-		{regexp.MustCompile(`\[\[|\[([^\]]+)\]`), "[%s]"},
-		{regexp.MustCompile(`<<|<([^>]+)>`), "<%s>"},
-	}
-
-	result := v
-	for _, p := range patterns {
-		result = p.regex.ReplaceAllStringFunc(result, func(match string) string {
-			// Check if this is an escaped tag
-			if len(match) == 2 {
-				return match[:1] // Return single bracket for escaped tags
-			}
-
-			// Extract tag name by removing the brackets
-			tagName := match[1 : len(match)-1]
-
-			if val, ok := t[tagName]; ok {
-				return val
-			}
-			return fmt.Sprintf(p.wrapper, "ERROR:"+tagName)
-		})
-	}
-
-	return result
-}
-
-func BenchmarkRegexMethod(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = TagReplacerViaRegex(Para, Tags)
-	}
-}
-
-func TestRegexMethod(b *testing.T) {
-	fmt.Println(TagReplacerViaRegex(Para, Tags))
-}
-
-func TestLexerMethod(t *testing.T) {
-	fmt.Println(TagReplacerViaLexer(Para, Tags))
-}
-
-func BenchmarkLexerMethod(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = TagReplacerViaLexer(Para, Tags)
-	}
 }
